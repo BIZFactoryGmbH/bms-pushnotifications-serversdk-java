@@ -43,6 +43,12 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ibm.mobilefirstplatform.serversdk.java.push.exception.PushServerSDKException;
+import java.security.KeyStoreException;
+import org.apache.http.conn.ssl.NoopHostnameVerifier;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.ssl.SSLContextBuilder;
 
 /**
  * This class is used to send notifications from a Java server to mobile devices
@@ -163,8 +169,18 @@ public class PushNotifications {
 	}
 	
 	public static CloseableHttpResponse getAuthToken() {
-		CloseableHttpClient httpClient = HttpClients.createDefault();
+		HttpClientBuilder httpClientBuilder = HttpClientBuilder.create().useSystemProperties();
+                
+                try {
+				SSLContextBuilder builder = new SSLContextBuilder();
+				builder.loadTrustMaterial(null, new TrustSelfSignedStrategy());
+				SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(builder.build(),
+						NoopHostnameVerifier.INSTANCE);
+				httpClientBuilder.setSSLSocketFactory(sslsf);
+			
 
+            CloseableHttpClient httpClient = httpClientBuilder.build();
+		
 		String iamUri = PushConstants.IAM_URI + iamRegion + PushConstants.IAM_TOKEN_PATH;
 			
 		HttpPost pushPost = new HttpPost(iamUri);
@@ -181,6 +197,9 @@ public class PushNotifications {
 				logger.log(Level.SEVERE, e.toString(), e);
 				throw  new PushServerSDKException(PushConstants.PushServerSDKExceptions.IAM_FAILURE_EXCEPTION, e);
 			} 
+                        } catch (NoSuchAlgorithmException | KeyStoreException | KeyManagementException e) {
+				throw new RuntimeException(e);
+			}
 		
 	}
 
@@ -254,7 +273,7 @@ public class PushNotifications {
 	 *            Optional PushNotificationsResponseListener to listen to the
 	 *            result of this operation.
 	 */
-	public static void send(Notification notification, PushNotificationsResponseListener listener) {
+	public static void send(Notification notification, PushNotificationsResponseListener listener) throws Exception{
 		pushListner = listener;
 		if (pushMessageEndpointURL == null || pushMessageEndpointURL.length() == 0) {
 			Throwable exception = new RuntimeException(PushConstants.PushServerSDKExceptions.NULL_NOTIFICATION_EXCEPTION);
@@ -274,7 +293,7 @@ public class PushNotifications {
 			}
 			return;
 		}
-
+                
 		CloseableHttpClient httpClient = enableTLS();
 		
 		PushMessageModel model = new PushMessageModel.Builder().message(notification.getMessage())
@@ -290,7 +309,7 @@ public class PushNotifications {
 		
 	}
 	
-	public static void sendBulk(Notification[] notifications, PushNotificationsResponseListener listener) {
+	public static void sendBulk(Notification[] notifications, PushNotificationsResponseListener listener)  throws Exception{
 		
 		pushListner = listener;
 		if (pushMessageEndpointURL == null || pushMessageEndpointURL.length() == 0) {
@@ -330,20 +349,37 @@ public class PushNotifications {
 		executePushPostRequest(pushPost, httpClient, listener);
 	}
 
-	private static CloseableHttpClient enableTLS() {
-		CloseableHttpClient httpClient = null;
-		SSLContext sslContext = null;
-		try {
-			sslContext = SSLContext.getInstance(PushConstants.TLS_VERSION);
-			sslContext.init(null, null, null);
-			httpClient = HttpClients.custom().setSSLContext(sslContext).build();
-		} catch (NoSuchAlgorithmException e) {
-			logger.log(Level.SEVERE, e.toString(), e);
-		} catch (KeyManagementException e) {
-			logger.log(Level.SEVERE, e.toString(), e);
-		}
-		return httpClient;
-		
+	private static CloseableHttpClient enableTLS() throws Exception {
+//		CloseableHttpClient httpClient = null;
+//		SSLContext sslContext = null;
+//		try {
+//			sslContext = SSLContext.getInstance(PushConstants.TLS_VERSION);
+//			sslContext.init(null, null, null);
+//			httpClient = HttpClients.custom().setSSLContext(sslContext).build();
+//		} catch (NoSuchAlgorithmException e) {
+//			logger.log(Level.SEVERE, e.toString(), e);
+//		} catch (KeyManagementException e) {
+//			logger.log(Level.SEVERE, e.toString(), e);
+//		}
+//		return httpClient;
+		HttpClientBuilder httpClientBuilder = HttpClientBuilder.create().useSystemProperties();
+                
+                try {
+				SSLContextBuilder builder = new SSLContextBuilder();
+				builder.loadTrustMaterial(null, new TrustSelfSignedStrategy());
+				SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(builder.build(),
+						NoopHostnameVerifier.INSTANCE);
+				httpClientBuilder.setSSLSocketFactory(sslsf);
+			
+
+                    CloseableHttpClient httpClient = httpClientBuilder.build();
+                     return httpClient;
+                }
+                catch(Exception ex){
+                   
+                      throw ex;
+                        }
+               
 	}
 
 	/**

@@ -6,6 +6,8 @@ import static org.mockito.Mockito.*;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpStatus;
@@ -87,34 +89,42 @@ public class PushNotificationsTest {
 
 	@Test
 	public void shouldFailSendingMessageWhenNotInitialized() {
-		PushNotifications.send(null, new PushNotificationsResponseListener() {
-			@Override
-			public void onSuccess(int statusCode, String responseBody) {
-				fail("Sending did not fail when PushNotifications was not initialized.");
-			}
-
-			@Override
-			public void onFailure(Integer statusCode, String responseBody, Throwable t) {
-				// Successfully failed.
-			}
-		});
+            try {
+                PushNotifications.send(null, new PushNotificationsResponseListener() {
+                    @Override
+                    public void onSuccess(int statusCode, String responseBody) {
+                        fail("Sending did not fail when PushNotifications was not initialized.");
+                    }
+                    
+                    @Override
+                    public void onFailure(Integer statusCode, String responseBody, Throwable t) {
+                        // Successfully failed.
+                    }
+                });
+            } catch (Exception ex) {
+                Logger.getLogger(PushNotificationsTest.class.getName()).log(Level.SEVERE, null, ex);
+            }
 	}
 
 	@Test
 	public void shouldFailSendingMessageWhenNotificationIsNull() {
 		PushNotifications.init("a", "b", "c");
 
-		PushNotifications.send(null, new PushNotificationsResponseListener() {
-			@Override
-			public void onSuccess(int statusCode, String responseBody) {
-				fail("Sending did not fail when PushNotifications was not initialized.");
-			}
-
-			@Override
-			public void onFailure(Integer statusCode, String responseBody, Throwable t) {
-				// Successfully failed.
-			}
-		});
+            try {
+                PushNotifications.send(null, new PushNotificationsResponseListener() {
+                    @Override
+                    public void onSuccess(int statusCode, String responseBody) {
+                        fail("Sending did not fail when PushNotifications was not initialized.");
+                    }
+                    
+                    @Override
+                    public void onFailure(Integer statusCode, String responseBody, Throwable t) {
+                        // Successfully failed.
+                    }
+                });
+            } catch (Exception ex) {
+                Logger.getLogger(PushNotificationsTest.class.getName()).log(Level.SEVERE, null, ex);
+            }
 	}
 
 	@Test
