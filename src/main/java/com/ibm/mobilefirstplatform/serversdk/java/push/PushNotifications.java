@@ -300,14 +300,18 @@ public class PushNotifications {
 				.target(notification.getTarget()).settings(notification.getSettings()).build();
 
 		JSONObject notificationJson = generateJSON(model);
-		
+//		notificationJson.put("warningId", 1);
+//                notificationJson.put("type", "FOOD");
 		HttpPost pushPost = null;
 
 		pushPost = createPushPostRequest(notificationJson);
-
+                //logger.log(Level.INFO, notificationJson.toString());
 		executePushPostRequest(pushPost, httpClient, listener);
 		
-	}
+
+        
+        
+        }
 	
 	public static void sendBulk(Notification[] notifications, PushNotificationsResponseListener listener)  throws Exception{
 		
