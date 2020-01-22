@@ -44,10 +44,15 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ibm.mobilefirstplatform.serversdk.java.push.exception.PushServerSDKException;
 import java.security.KeyStoreException;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpHeaders;
+import org.apache.http.HttpHost;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.params.HttpProtocolParams;
 import org.apache.http.ssl.SSLContextBuilder;
 
 /**
@@ -58,7 +63,8 @@ public class PushNotifications {
 	public static final String US_SOUTH_REGION = ".ng.bluemix.net";
 	public static final String UK_REGION = ".eu-gb.bluemix.net";
 	public static final String SYDNEY_REGION = ".au-syd.bluemix.net";
-	public static final String FRANKFURT_REGION = ".eu-de.bluemix.net";
+	//public static final String FRANKFURT_REGION = ".eu-de.bluemix.net";
+	public static final String FRANKFURT_REGION = ".cloud.ibm.com";
 	public static final String US_EAST_REGION = ".us-east.bluemix.net";
 	public static final String JP_TOK = ".jp-tok.bluemix.net";
 
@@ -73,7 +79,7 @@ public class PushNotifications {
 	
 	protected static String accessToken;
 	
-	protected static String iamRegion;
+	protected static String iamRegion = ".eu-de.bluemix.net";
 
 	protected static String pushMessageEndpointURL;
 
@@ -111,12 +117,14 @@ public class PushNotifications {
 	private static void createPushEndPointUrl(String tenantId, String bluemixRegion) {
 		if (overrideServerHost != null) {
 			pushMessageEndpointURL = overrideServerHost + PushConstants.URL + tenantId + PushConstants.API;
+                        pushMessageEndpointURL = pushMessageEndpointURL.replace("﻿imfpush.eu-de.bluemix.net", "﻿eu-de.imfpush.cloud.ibm.com");
 		} else {
 			if (bluemixRegion.equals(JP_TOK)) {
 				pushMessageEndpointURL = PushConstants.JPHOST + PushConstants.URL + tenantId + PushConstants.API;
 			} else {
 				pushMessageEndpointURL = PushConstants.HOST + bluemixRegion + PushConstants.URL + tenantId 
 				+ PushConstants.API;
+                                pushMessageEndpointURL = pushMessageEndpointURL.replace("﻿imfpush.eu-de.bluemix.net", "﻿eu-de.imfpush.cloud.ibm.com");
 			}
 		}
 	}
@@ -169,42 +177,69 @@ public class PushNotifications {
 			logger.log(Level.SEVERE, exception.toString(), exception);
 			throw exception;
 		}
-		
+		System.out.println(bluemixRegionn);
 		iamRegion = bluemixRegionn;
 	}
 	
 	public static CloseableHttpResponse getAuthToken() {
-		HttpClientBuilder httpClientBuilder = HttpClientBuilder.create().useSystemProperties();
+		//HttpClientBuilder httpClientBuilder = HttpClientBuilder.create().useSystemProperties();
+                //2020-01-20
+                String proxyHost = null;
+                String proxyPort = null;
+                String proxyType = null;
+
+                proxyHost = System.getProperty("https.proxyHost");
+                proxyPort = System.getProperty("https.proxyPort");
+                proxyType = "http";
                 
+                // 2017-12-14: Proxy terminiert https selbst und leite http weiter? TLS termination proxy
+                // System.getProperty("https.isTlsTerminationProxy");
+                String isTlsTerminationProxy = System.getProperty("https.isTlsTerminationProxy");
+
+                if( isTlsTerminationProxy != null && "true".equals( isTlsTerminationProxy ) ){
+                   // System.out.println("using proxy: is TLS termination proxy");
+                    proxyType = "http";
+                }
+//                
+//                HttpClientBuilder httpClientBuilder = HttpClientBuilder.create();
+//                httpClientBuilder.setProxy(new HttpHost(proxyHost, Integer.valueOf(proxyPort), proxyType));
+//                
+//                    if(PushConstants.IAM_URI.startsWith("https://")){
+//                    try {
+//                        SSLContextBuilder builder = new SSLContextBuilder();
+////				builder.loadTrustMaterial(null, new TrustSelfSignedStrategy());
+//                        SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(builder.build(),
+//                                NoopHostnameVerifier.INSTANCE);
+//                        httpClientBuilder.setSSLSocketFactory(sslsf);
+//                    } catch (NoSuchAlgorithmException ex) {
+//                        Logger.getLogger(PushNotifications.class.getName()).log(Level.SEVERE, null, ex);
+//                    } catch (KeyManagementException ex) {
+//                        Logger.getLogger(PushNotifications.class.getName()).log(Level.SEVERE, null, ex);
+//                    }
+//                    }
+System.out.println("use proxy "+ proxyHost + " port " + proxyPort + " type " + proxyType);
+                
+                CloseableHttpClient httpClient = HttpsSSLClient.createSSLInsecureClient();
+                //CloseableHttpClient httpClient = httpClientBuilder.build();
+                String iamUri = PushConstants.IAM_URI + iamRegion + PushConstants.IAM_TOKEN_PATH;
+                System.out.println("iam uri");
+                System.out.println(iamUri);
+                HttpPost pushPost = new HttpPost(iamUri);
+                            HttpHost proxy = new HttpHost(proxyHost, NumberParser.parseInt(proxyPort,80), proxyType);
+            
+            RequestConfig config = RequestConfig.custom().setProxy(proxy).build();
+            pushPost.setConfig(config);
+                pushPost.addHeader(HTTP.CONTENT_TYPE, PushConstants.IAM_CONTENT_TYPE);
+                List <NameValuePair> nvps = new ArrayList <NameValuePair>();
+                nvps.add(new BasicNameValuePair(PushConstants.GRANT_TYPE, PushConstants.GRANT_TYPE_VALUE_APIKEY));
+                nvps.add(new BasicNameValuePair("apikey", apiKeyIdIs));
                 try {
-				SSLContextBuilder builder = new SSLContextBuilder();
-				builder.loadTrustMaterial(null, new TrustSelfSignedStrategy());
-				SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(builder.build(),
-						NoopHostnameVerifier.INSTANCE);
-				httpClientBuilder.setSSLSocketFactory(sslsf);
-			
-
-            CloseableHttpClient httpClient = httpClientBuilder.build();
-		
-		String iamUri = PushConstants.IAM_URI + iamRegion + PushConstants.IAM_TOKEN_PATH;
-			
-		HttpPost pushPost = new HttpPost(iamUri);
-
-		pushPost.addHeader(HTTP.CONTENT_TYPE, PushConstants.IAM_CONTENT_TYPE);
-		List <NameValuePair> nvps = new ArrayList <NameValuePair>();
-		nvps.add(new BasicNameValuePair(PushConstants.GRANT_TYPE, PushConstants.GRANT_TYPE_VALUE_APIKEY));
-		nvps.add(new BasicNameValuePair("apikey", apiKeyIdIs));
-
-			try {
-				pushPost.setEntity(new UrlEncodedFormEntity(nvps,  PushConstants.UTFEIGHT));
-				return httpClient.execute(pushPost);
-			} catch (IOException e) {
-				logger.log(Level.SEVERE, e.toString(), e);
-				throw  new PushServerSDKException(PushConstants.PushServerSDKExceptions.IAM_FAILURE_EXCEPTION, e);
-			} 
-                        } catch (NoSuchAlgorithmException | KeyStoreException | KeyManagementException e) {
-				throw new RuntimeException(e);
-			}
+                    pushPost.setEntity(new UrlEncodedFormEntity(nvps,  PushConstants.UTFEIGHT));
+                    return httpClient.execute(pushPost);
+                } catch (IOException e) {
+                    logger.log(Level.SEVERE, e.toString(), e);
+                    throw  new PushServerSDKException(PushConstants.PushServerSDKExceptions.IAM_FAILURE_EXCEPTION, e);
+                }
 		
 	}
 
@@ -300,6 +335,8 @@ public class PushNotifications {
 		}
                 
 		CloseableHttpClient httpClient = enableTLS();
+                
+
 		
 		PushMessageModel model = new PushMessageModel.Builder().message(notification.getMessage())
 				.target(notification.getTarget()).settings(notification.getSettings()).build();
@@ -310,7 +347,9 @@ public class PushNotifications {
 		HttpPost pushPost = null;
 
 		pushPost = createPushPostRequest(notificationJson);
-                //logger.log(Level.INFO, notificationJson.toString());
+                
+               pushPost.setHeader(HttpHeaders.USER_AGENT, "Mozilla/5.0 Firefox/26.0");
+                logger.log(Level.INFO, notificationJson.toString());
 		executePushPostRequest(pushPost, httpClient, listener);
 		
 
@@ -341,6 +380,7 @@ public class PushNotifications {
 		}
 
 		CloseableHttpClient httpClient = enableTLS();
+
 		
 		List<JSONObject> MessageJson = new ArrayList<JSONObject>();
 		for (Notification notification: notifications){
@@ -355,39 +395,64 @@ public class PushNotifications {
 		
 		HttpPost pushPost = createBulkPushPostRequest(MessageJson);
 
+                pushPost.setHeader(HttpHeaders.USER_AGENT, "Mozilla/5.0 Firefox/26.0");     
+                String proxyHost = null;
+                String proxyPort = null;
+                String proxyType = null;
+
+                proxyHost = System.getProperty("https.proxyHost");
+                proxyPort = System.getProperty("https.proxyPort");
+                proxyType = "http";
+                
+                // 2017-12-14: Proxy terminiert https selbst und leite http weiter? TLS termination proxy
+                // System.getProperty("https.isTlsTerminationProxy");
+                String isTlsTerminationProxy = System.getProperty("https.isTlsTerminationProxy");
+
+                if( isTlsTerminationProxy != null && "true".equals( isTlsTerminationProxy ) ){
+                   // System.out.println("using proxy: is TLS termination proxy");
+                    proxyType = "http";
+                }
+                HttpHost proxy = new HttpHost(proxyHost, NumberParser.parseInt(proxyPort,80), proxyType);
+            
+                RequestConfig config = RequestConfig.custom().setProxy(proxy).build();
+                pushPost.setConfig(config);
+                
 		executePushPostRequest(pushPost, httpClient, listener);
 	}
 
 	private static CloseableHttpClient enableTLS() throws Exception {
-//		CloseableHttpClient httpClient = null;
-//		SSLContext sslContext = null;
-//		try {
-//			sslContext = SSLContext.getInstance(PushConstants.TLS_VERSION);
-//			sslContext.init(null, null, null);
-//			httpClient = HttpClients.custom().setSSLContext(sslContext).build();
-//		} catch (NoSuchAlgorithmException e) {
-//			logger.log(Level.SEVERE, e.toString(), e);
-//		} catch (KeyManagementException e) {
-//			logger.log(Level.SEVERE, e.toString(), e);
-//		}
-//		return httpClient;
-		HttpClientBuilder httpClientBuilder = HttpClientBuilder.create().useSystemProperties();
-                
-                try {
-				SSLContextBuilder builder = new SSLContextBuilder();
-				builder.loadTrustMaterial(null, new TrustSelfSignedStrategy());
-				SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(builder.build(),
-						NoopHostnameVerifier.INSTANCE);
-				httpClientBuilder.setSSLSocketFactory(sslsf);
-			
+		CloseableHttpClient httpClient = null;
+		SSLContext sslContext = null;
+		try {
+			sslContext = SSLContext.getInstance(PushConstants.TLS_VERSION);
+			sslContext.init(null, null, null);
+			httpClient = HttpClients.custom().setUserAgent("my UserAgent 5.0").setSSLContext(sslContext).build();
+		} catch (NoSuchAlgorithmException e) {
+			logger.log(Level.SEVERE, e.toString(), e);
+		} catch (KeyManagementException e) {
+			logger.log(Level.SEVERE, e.toString(), e);
+		}
+		return httpClient;
+//		HttpClientBuilder httpClientBuilder = HttpClientBuilder.create().useSystemProperties();
+//                
+//                try {
+//				SSLContextBuilder builder = new SSLContextBuilder();
+//				builder.loadTrustMaterial(null, new TrustSelfSignedStrategy());
+//				SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(builder.build(),
+//						NoopHostnameVerifier.INSTANCE);
+//				httpClientBuilder.setSSLSocketFactory(sslsf);
+//			
+//
+//                    CloseableHttpClient httpClient = httpClientBuilder.build();
+//                     return httpClient;
+//                }
+//                catch(Exception ex){
+//                   
+//                      throw ex;
+//                        }
 
-                    CloseableHttpClient httpClient = httpClientBuilder.build();
-                     return httpClient;
-                }
-                catch(Exception ex){
-                   
-                      throw ex;
-                        }
+               //return HttpsSSLClient.createSSLInsecureClient();
+               
                
 	}
 
@@ -428,11 +493,62 @@ public class PushNotifications {
 	}
 
 	protected static HttpPost createPushPostRequest(JSONObject notification)  {
-		HttpPost pushPost = new HttpPost(pushMessageEndpointURL);
+String proxyHost = null;
+                String proxyPort = null;
+                String proxyType = null;
+
+                proxyHost = System.getProperty("https.proxyHost");
+                proxyPort = System.getProperty("https.proxyPort");
+                proxyType = "http";
+                
+                // 2017-12-14: Proxy terminiert https selbst und leite http weiter? TLS termination proxy
+                // System.getProperty("https.isTlsTerminationProxy");
+                String isTlsTerminationProxy = System.getProperty("https.isTlsTerminationProxy");
+
+                if( isTlsTerminationProxy != null && "true".equals( isTlsTerminationProxy ) ){
+                   // System.out.println("using proxy: is TLS termination proxy");
+                    proxyType = "http";
+                }
+//                
+//                HttpClientBuilder httpClientBuilder = HttpClientBuilder.create();
+//                httpClientBuilder.setProxy(new HttpHost(proxyHost, Integer.valueOf(proxyPort), proxyType));
+//                
+//                    if(PushConstants.IAM_URI.startsWith("https://")){
+//                    try {
+//                        SSLContextBuilder builder = new SSLContextBuilder();
+////				builder.loadTrustMaterial(null, new TrustSelfSignedStrategy());
+//                        SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(builder.build(),
+//                                NoopHostnameVerifier.INSTANCE);
+//                        httpClientBuilder.setSSLSocketFactory(sslsf);
+//                    } catch (NoSuchAlgorithmException ex) {
+//                        Logger.getLogger(PushNotifications.class.getName()).log(Level.SEVERE, null, ex);
+//                    } catch (KeyManagementException ex) {
+//                        Logger.getLogger(PushNotifications.class.getName()).log(Level.SEVERE, null, ex);
+//                    }
+//                    }
+            System.out.println("use proxy "+ proxyHost + " port " + proxyPort + " type " + proxyType);
+
+                            CloseableHttpClient httpClient = HttpsSSLClient.createSSLInsecureClient();
+                            //CloseableHttpClient httpClient = httpClientBuilder.build();
+                            String iamUri = PushConstants.IAM_URI + iamRegion + PushConstants.IAM_TOKEN_PATH;
+                            System.out.println("iam uri in create push");
+                            System.out.println(iamUri);
+                            System.out.println(pushMessageEndpointURL);
+                            HttpPost pushPost = new HttpPost(pushMessageEndpointURL);
+                            if(proxyHost !=null){
+                                        HttpHost proxy = new HttpHost(proxyHost, NumberParser.parseInt(proxyPort,80), proxyType);
+
+                RequestConfig config = RequestConfig.custom().setProxy(proxy).build();
+                pushPost.setConfig(config);
+
+                            }
+            
 
 		pushPost.addHeader(HTTP.CONTENT_TYPE, PushConstants.CONTENT_TYPE);
-		
+		pushPost.setHeader(HttpHeaders.USER_AGENT, "Mozilla/5.0 Firefox/26.0");     
 		setHeader(pushPost);
+                System.out.println("headers set");
+                System.out.println(notification.toString());
 		StringEntity body = new StringEntity(notification.toString(), PushConstants.UTFEIGHT);
 		pushPost.setEntity(body);
 
@@ -440,8 +556,54 @@ public class PushNotifications {
 	}
 	
 	protected static HttpPost createBulkPushPostRequest(List<JSONObject> messageJson) {
-		HttpPost pushPost = new HttpPost(pushMessageEndpointURL + "/bulk");
+            String proxyHost = null;
+                String proxyPort = null;
+                String proxyType = null;
 
+                proxyHost = System.getProperty("https.proxyHost");
+                proxyPort = System.getProperty("https.proxyPort");
+                proxyType = "http";
+                
+                // 2017-12-14: Proxy terminiert https selbst und leite http weiter? TLS termination proxy
+                // System.getProperty("https.isTlsTerminationProxy");
+                String isTlsTerminationProxy = System.getProperty("https.isTlsTerminationProxy");
+
+                if( isTlsTerminationProxy != null && "true".equals( isTlsTerminationProxy ) ){
+                   // System.out.println("using proxy: is TLS termination proxy");
+                    proxyType = "http";
+                }
+//                
+//                HttpClientBuilder httpClientBuilder = HttpClientBuilder.create();
+//                httpClientBuilder.setProxy(new HttpHost(proxyHost, Integer.valueOf(proxyPort), proxyType));
+//                
+//                    if(PushConstants.IAM_URI.startsWith("https://")){
+//                    try {
+//                        SSLContextBuilder builder = new SSLContextBuilder();
+////				builder.loadTrustMaterial(null, new TrustSelfSignedStrategy());
+//                        SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(builder.build(),
+//                                NoopHostnameVerifier.INSTANCE);
+//                        httpClientBuilder.setSSLSocketFactory(sslsf);
+//                    } catch (NoSuchAlgorithmException ex) {
+//                        Logger.getLogger(PushNotifications.class.getName()).log(Level.SEVERE, null, ex);
+//                    } catch (KeyManagementException ex) {
+//                        Logger.getLogger(PushNotifications.class.getName()).log(Level.SEVERE, null, ex);
+//                    }
+//                    }
+            System.out.println("use proxy "+ proxyHost + " port " + proxyPort + " type " + proxyType);
+
+                            CloseableHttpClient httpClient = HttpsSSLClient.createSSLInsecureClient();
+                            //CloseableHttpClient httpClient = httpClientBuilder.build();
+                            String iamUri = PushConstants.IAM_URI + iamRegion + PushConstants.IAM_TOKEN_PATH;
+                            System.out.println("iam uri");
+                            System.out.println(iamUri);
+                           HttpPost pushPost = new HttpPost(pushMessageEndpointURL + "/bulk");
+if(proxyHost !=null){
+                                        HttpHost proxy = new HttpHost(proxyHost, NumberParser.parseInt(proxyPort,80), proxyType);
+
+                RequestConfig config = RequestConfig.custom().setProxy(proxy).build();
+                pushPost.setConfig(config);
+}
+		pushPost.setHeader(HttpHeaders.USER_AGENT, "Mozilla/5.0 Firefox/26.0");     
 		pushPost.addHeader(HTTP.CONTENT_TYPE, PushConstants.CONTENT_TYPE);
 		setHeader(pushPost);
 		
@@ -453,14 +615,29 @@ public class PushNotifications {
 
 	private static void setHeader(HttpPost pushPost) {
 		if (secret != null) {
+                    System.out.println("add secret "+secret);
 			pushPost.addHeader(PushConstants.APPSECRET, secret);
 		} else {
 			CloseableHttpResponse auth = null;
 			try {
 				if (accessToken == null || (apiKeyExpireyTime - (System.currentTimeMillis() / 1000)) < 0) {
+                                    System.out.println("has no access token or expired");
 					auth = getAuthToken();
+//                                        try {
+//
+//                                            HttpEntity entity = auth.getEntity();
+//
+//                                            // Read the contents of an entity and return it as a String.
+//                                            String content = EntityUtils.toString(entity);
+//                                            System.out.println(content);
+//
+//                                        } catch (IOException e) {
+//                                            e.printStackTrace();
+//                                        }
+System.out.println(auth);
 					JSONObject json = null;
 					json = new JSONObject(EntityUtils.toString(auth.getEntity()));
+                                        System.out.println(json.toString());
 					int statusCode = auth.getStatusLine().getStatusCode();
 					String resonPhrase = auth.getStatusLine().getReasonPhrase();
 
@@ -469,7 +646,11 @@ public class PushNotifications {
 						apiKeyExpireyTime = json.getInt(PushConstants.EXPIRATION);
 						pushPost.addHeader(PushConstants.AUTHORIZATION_HEADER,
 								PushConstants.BEARER + PushConstants.EMPTY_SPACE + accessToken);
+                                                System.out.println("add header access");
+                                                System.out.println(PushConstants.AUTHORIZATION_HEADER + " " +PushConstants.BEARER + PushConstants.EMPTY_SPACE + accessToken);
+                                                 
 					} else {
+                                            System.out.println("push failed for "+ auth.getStatusLine().getReasonPhrase());
 						PushServerSDKException pushServerSDKException = new PushServerSDKException(resonPhrase);
 						if (pushListner != null) {
 							pushListner.onFailure(statusCode, pushServerSDKException.getLocalizedMessage(),
@@ -479,6 +660,7 @@ public class PushNotifications {
 
 					}
 				} else {
+                                    System.out.println("has auth already use access "+accessToken);
 					pushPost.addHeader(PushConstants.AUTHORIZATION_HEADER, "Bearer " + accessToken);
 				}
 			}  catch (ParseException e) {
@@ -506,6 +688,7 @@ public class PushNotifications {
 
 		try {
 			if (httpClient != null && listener != null) {
+                                System.out.println("execute");
 				response = httpClient.execute(pushPost);
 				sendResponseToListener(response, listener);
 			} else {
@@ -542,6 +725,8 @@ public class PushNotifications {
 			response.getEntity().writeTo(outputAsByteArray);
 
 			responseBody = new String(outputAsByteArray.toByteArray());
+                        System.out.println("response has entity");
+                        System.out.println(responseBody);
 		}
 
 		Integer statusCode = null;
