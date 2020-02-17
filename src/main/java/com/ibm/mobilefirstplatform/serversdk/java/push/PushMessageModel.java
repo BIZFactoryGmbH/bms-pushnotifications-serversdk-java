@@ -10,92 +10,88 @@
  *     See the License for the specific language governing permissions and
  *     limitations under the License.
  */
-
 package com.ibm.mobilefirstplatform.serversdk.java.push;
 
 /**
- * 
+ *
  * Parent modal class for notification message.
  *
  */
 public final class PushMessageModel {
 
-	private Message message;
-	private Target target;
-	private Settings settings;
+    private Message message;
+    private Target target;
+    private Settings settings;
 
-	public final Message getMessage() {
-		return message;
-	}
+    public final Message getMessage() {
+        return message;
+    }
 
-	public final Target getTarget() {
-		return target;
-	}
+    public final Target getTarget() {
+        return target;
+    }
 
-	public final Settings getSettings() {
-		return settings;
-	}
+    public final Settings getSettings() {
+        return settings;
+    }
 
-	private PushMessageModel(Builder builder) {
-		this.message = builder.message;
-		this.settings = builder.settings;
-		this.target = builder.target;
-	}
+    private PushMessageModel(Builder builder) {
+        this.message = builder.message;
+        this.settings = builder.settings;
+        this.target = builder.target;
+    }
 
-	/**
-	 * 
-	 * Builder for {@link PushMessageModel}.
-	 *
-	 */
-	public static class Builder {
-		private Message message;
-		private Target target;
-		private Settings settings;
+    /**
+     *
+     * Builder for {@link PushMessageModel}.
+     *
+     */
+    public static class Builder {
 
-		/**
-		 * 
-		 * @param message
-		 *            Message object with attributes alert and URL.
-		 * @return The Builder object for calls to be linked.
-		 * 
-		 */
-		public final Builder message(final Message message) {
-			this.message = message;
-			return this;
-		}
+        private Message message;
+        private Target target;
+        private Settings settings;
 
-		/**
-		 * 
-		 * @param target
-		 *            Target object with attributes deviceIds, userIds,
-		 *            platforms and tagNames.
-		 * @return The Builder object for calls to be linked.
-		 */
-		public final Builder target(final Target target) {
-			this.target = target;
-			return this;
-		}
+        /**
+         *
+         * @param message Message object with attributes alert and URL.
+         * @return The Builder object for calls to be linked.
+         *
+         */
+        public final Builder message(final Message message) {
+            this.message = message;
+            return this;
+        }
 
-		/**
-		 * 
-		 * @param settings
-		 *            Settings object with platforms settings like APNS, FCM,
-		 *            Safari, and so on.
-		 * @return The Builder object for calls to be linked.
-		 */
+        /**
+         *
+         * @param target Target object with attributes deviceIds, userIds,
+         * platforms and tagNames.
+         * @return The Builder object for calls to be linked.
+         */
+        public final Builder target(final Target target) {
+            this.target = target;
+            return this;
+        }
 
-		public final Builder settings(final Settings settings) {
-			this.settings = settings;
-			return this;
-		}
+        /**
+         *
+         * @param settings Settings object with platforms settings like APNS,
+         * FCM, Safari, and so on.
+         * @return The Builder object for calls to be linked.
+         */
+        public final Builder settings(final Settings settings) {
+            this.settings = settings;
+            return this;
+        }
 
-		/**
-		 * 
-		 * @return the {@link PushMessageModel} object.
-		 */
-		public PushMessageModel build() {
-			return new PushMessageModel(this);
-		}
+        /**
+         *
+         * @return the {@link PushMessageModel} object.
+         */
+        public PushMessageModel build() {
+            return new PushMessageModel(this);
+        }
 
-	}
+    }
 }
