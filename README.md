@@ -5,6 +5,11 @@
 
 The Push Notifications Server-side SDK for Java is used to send push notifications to registered devices using the [Push Notifications service in IBM® Cloud](https://console.ng.bluemix.net/docs/services/mobilepush/index.html).
 
+## Adapted to allow Usage with Reverse Proxy Firewalls
+
+To provide https functionality behind a reverse proxy, the variables proxy host and proxy port are now being inspected.
+Additionally the bluemix urls are no longer valid and new urls have been provided.
+
 ## Getting the SDK
 
 You can get the SDK from Maven Central. To get it with Maven, include the following in your dependencies:
