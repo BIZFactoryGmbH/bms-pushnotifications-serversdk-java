@@ -10,71 +10,69 @@
  *     See the License for the specific language governing permissions and
  *     limitations under the License.
  */
-
 package com.ibm.mobilefirstplatform.serversdk.java.push;
 
 /**
- * 
+ *
  * Modal class for Message attributes that specifies the content of the
  * notification message.
  *
  */
 public final class Message {
 
-	private String alert;
-	private String url;
+    private String alert;
+    private String url;
 
-	public final String getAlert() {
-		return alert;
-	}
+    public final String getAlert() {
+        return alert;
+    }
 
-	public final String getUrl() {
-		return url;
-	}
+    public final String getUrl() {
+        return url;
+    }
 
-	private Message(Builder builder) {
-		this.alert = builder.alert;
-		this.url = builder.url;
+    private Message(Builder builder) {
+        this.alert = builder.alert;
+        this.url = builder.url;
 
-	}
+    }
 
-	/**
-	 * 
-	 * Builder for {@link Message}.
-	 *
-	 */
-	public static class Builder {
-		private String alert;
-		private String url;
+    /**
+     *
+     * Builder for {@link Message}.
+     *
+     */
+    public static class Builder {
 
-		/**
-		 * 
-		 * @param alert
-		 *            The notification message to be shown to the user.
-		 * @return The Builder object for calls to be linked.
-		 */
-		public final Builder alert(final String alert) {
-			this.alert = alert;
-			return this;
-		}
+        private String alert;
+        private String url;
 
-		/**
-		 * 
-		 * @param url
-		 *            An optional URL that can be sent along with the alert.
-		 * @return The Builder object for calls to be linked.
-		 */
-		public final Builder url(final String url) {
-			this.url = url;
-			return this;
-		}
+        /**
+         *
+         * @param alert The notification message to be shown to the user.
+         * @return The Builder object for calls to be linked.
+         */
+        public final Builder alert(final String alert) {
+            this.alert = alert;
+            return this;
+        }
 
-		/**
-		 * 
-		 * @return the {@link Message} object.
-		 */
-		public Message build() {
-			return new Message(this);
-		}
-	}
+        /**
+         *
+         * @param url An optional URL that can be sent along with the alert.
+         * @return The Builder object for calls to be linked.
+         */
+        public final Builder url(final String url) {
+            this.url = url;
+            return this;
+        }
+
+        /**
+         *
+         * @return the {@link Message} object.
+         */
+        public Message build() {
+            return new Message(this);
+        }
+    }
 }

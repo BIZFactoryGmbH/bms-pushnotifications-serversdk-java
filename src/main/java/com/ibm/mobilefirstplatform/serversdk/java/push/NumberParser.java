@@ -6,36 +6,37 @@ import java.util.Locale;
 
 /**
  * Klasse bietet statische Methoden zum Parsing von Zahlen.
- * 
+ *
  * @author David Garcia
  * @version 1.0, 11-01-12
  */
 public class NumberParser {
 
-    /** stat. Member: Zahleformatierer für Deutsche Beträge */
+    /**
+     * stat. Member: Zahleformatierer für Deutsche Beträge
+     */
     static DecimalFormat germanDF;
-    
+
     /**
      * stat. Konstruktor baut Zahlenformatierer
      */
-    static{
-        germanDF = new DecimalFormat( "0.00", DecimalFormatSymbols.getInstance( Locale.GERMANY ) );
+    static {
+        germanDF = new DecimalFormat("0.00", DecimalFormatSymbols.getInstance(Locale.GERMANY));
     }
-    
+
     /**
      * Double Wert zu String in deutscher Notation erzeugen
+     *
      * @param dbl Double Wert
      * @return Wert als String
      */
-    public static String formatGermanDouble( double dbl ){
+    public static String formatGermanDouble(double dbl) {
         return germanDF.format(dbl);
     }
-    
-    
-    
-    
+
     /**
      * Eine long-Zahl als String zu long parsen
+     *
      * @param longStr Zahlenwert
      * @param defVal Defaultrückgabewert, falls parsing nicht möglich
      * @return long Zahl
@@ -43,13 +44,14 @@ public class NumberParser {
     public static long parseLong(String longStr, long defVal) {
         try {
             return Long.parseLong(longStr);
-        } catch (Exception ex) {
+        } catch (NumberFormatException ex) {
             return defVal;
         }
     }
 
     /**
      * Eine byte-Zahl als String zu byte parsen
+     *
      * @param byteStr Zahlenwert
      * @param defVal Defaultrückgabewert, falls parsing nicht möglich
      * @return byte Zahl
@@ -57,13 +59,14 @@ public class NumberParser {
     public static byte parseByte(String byteStr, byte defVal) {
         try {
             return Byte.parseByte(byteStr);
-        } catch (Exception ex) {
+        } catch (NumberFormatException ex) {
             return defVal;
         }
     }
 
     /**
      * Eine integer-Zahl als String zu integer parsen
+     *
      * @param intStr Zahlenwert
      * @param defVal Defaultrückgabewert, falls parsing nicht möglich
      * @return int Zahl
@@ -71,13 +74,14 @@ public class NumberParser {
     public static int parseInt(String intStr, int defVal) {
         try {
             return Integer.parseInt(intStr);
-        } catch (Exception ex) {
+        } catch (NumberFormatException ex) {
             return defVal;
         }
     }
 
     /**
      * Eine hex-Zahl als String zu integer parsen
+     *
      * @param intStr Zahlenwert
      * @param defVal Defaultrückgabewert, falls parsing nicht möglich
      * @return int Zahl
@@ -85,13 +89,14 @@ public class NumberParser {
     public static int parseIntHex(String intStr, int defVal) {
         try {
             return Integer.parseInt(intStr, 16);
-        } catch (Exception ex) {
+        } catch (NumberFormatException ex) {
             return defVal;
         }
     }
 
     /**
      * Eine double-Zahl als String zu double parsen
+     *
      * @param dblStr Zahlenwert
      * @param defVal Defaultrückgabewert, falls parsing nicht möglich
      * @return double Zahl
@@ -99,13 +104,14 @@ public class NumberParser {
     public static double parseDouble(String dblStr, double defVal) {
         try {
             return Double.parseDouble(dblStr);
-        } catch (Exception ex) {
+        } catch (NumberFormatException ex) {
             return defVal;
         }
     }
 
     /**
      * Eine boolean-Angabe als String zu boolean parsen
+     *
      * @param boolStr Zahlenwert
      * @param defVal Defaultrückgabewert, falls parsing nicht möglich
      * @return boolean Wert
@@ -116,16 +122,14 @@ public class NumberParser {
             return defVal;
         }
 
-        if (boolStr.toLowerCase().equals("true")) {
-            return true;
-        } else {
-            return false;
-        }
+        return boolStr.toLowerCase().equals("true");
 
     }
 
     /**
-     * Eine double-Zahl als String zu double parsen, auch für deutsche Notation geeignet
+     * Eine double-Zahl als String zu double parsen, auch für deutsche Notation
+     * geeignet
+     *
      * @param dblStr Zahlenwert
      * @param defVal Defaultrückgabewert, falls parsing nicht möglich
      * @param deutscheNotation Flag: Liegt eine deutsche Notation vor?
@@ -138,7 +142,7 @@ public class NumberParser {
                 dblStr = dblStr.replace(',', '.'); // DezSeparator wechseln
             }
             return Double.parseDouble(dblStr);
-        } catch (Exception ex) {
+        } catch (NumberFormatException ex) {
             return defVal;
         }
     }

@@ -25,238 +25,227 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class PushNotificationsTest {
-	@Before
-	public void cleanup() {
-		PushNotifications.pushMessageEndpointURL = null;
-		PushNotifications.secret = null;
-	}
 
-//	@Test
-//	public void shouldCreateEndpointURLAndStoreSecretWhenInitializing() {
-//		PushNotifications.init("testTenantId", "testPushSecret", PushNotifications.US_SOUTH_REGION);
-//
-//		assertEquals(
-//				"https://imfpush" + PushNotifications.US_SOUTH_REGION + ":/imfpush/v1/apps/testTenantId/messages",
-//				PushNotifications.pushMessageEndpointURL);
-//		assertEquals("testPushSecret", PushNotifications.secret);
-//	}
+    @Before
+    public void cleanup() {
+        PushNotifications.pushMessageEndpointURL = null;
+        PushNotifications.secret = null;
+    }
 
-	@Test
-	public void shouldCreateCorrectPostRequest() {
-		PushNotifications.pushMessageEndpointURL = "https://www.testendpoint.com";
-		PushNotifications.secret = "testAppSecret";
+    @Test
+    public void shouldCreateCorrectPostRequest() {
+        PushNotifications.pushMessageEndpointURL = "https://www.testendpoint.com";
+        PushNotifications.secret = "testAppSecret";
 
-		JSONObject notification = new JSONObject();
+        JSONObject notification = new JSONObject();
 
-		HttpPost post = PushNotifications.createPushPostRequest(notification);
+        HttpPost post = PushNotifications.createPushPostRequest(notification);
 
-		assertNotNull(post.getFirstHeader(HTTP.CONTENT_TYPE));
-		assertEquals("application/json", post.getFirstHeader(HTTP.CONTENT_TYPE).getValue());
+        assertNotNull(post.getFirstHeader(HTTP.CONTENT_TYPE));
+        assertEquals("application/json", post.getFirstHeader(HTTP.CONTENT_TYPE).getValue());
 
-		assertNotNull(post.getFirstHeader("appSecret"));
-		assertEquals("testAppSecret", post.getFirstHeader("appSecret").getValue());
+        assertNotNull(post.getFirstHeader("appSecret"));
+        assertEquals("testAppSecret", post.getFirstHeader("appSecret").getValue());
 
-		HttpEntity bodyEntity = post.getEntity();
-		StringEntity expectedBodyEntity = new StringEntity(notification.toString(), "UTF-8");
+        HttpEntity bodyEntity = post.getEntity();
+        StringEntity expectedBodyEntity = new StringEntity(notification.toString(), "UTF-8");
 
-		assertEquals(expectedBodyEntity.getContentLength(), bodyEntity.getContentLength());
-		assertEquals(expectedBodyEntity.getContentType().getValue(), bodyEntity.getContentType().getValue());
+        assertEquals(expectedBodyEntity.getContentLength(), bodyEntity.getContentLength());
+        assertEquals(expectedBodyEntity.getContentType().getValue(), bodyEntity.getContentType().getValue());
 
-		try {
-			ByteArrayOutputStream expectedBody = new ByteArrayOutputStream();
-			expectedBodyEntity.writeTo(expectedBody);
+        try {
+            ByteArrayOutputStream expectedBody = new ByteArrayOutputStream();
+            expectedBodyEntity.writeTo(expectedBody);
 
-			ByteArrayOutputStream body = new ByteArrayOutputStream();
-			bodyEntity.writeTo(body);
+            ByteArrayOutputStream body = new ByteArrayOutputStream();
+            bodyEntity.writeTo(body);
 
-			assertTrue(Arrays.equals(expectedBody.toByteArray(), body.toByteArray()));
-		} catch (IOException e) {
-			fail("Failed to convert entities to byte arrays.");
-		}
-	}
+            assertTrue(Arrays.equals(expectedBody.toByteArray(), body.toByteArray()));
+        } catch (IOException e) {
+            fail("Failed to convert entities to byte arrays.");
+        }
+    }
 
-	@Test
-	public void shouldFailInitializingWhenCredentialsAreNotInEnvironmentVariables() {
-		try {
-			PushNotifications.init("bluemixRegion");
-		} catch (Throwable e) {
-			// Did fail; test was successful.
-			return;
-		}
+    @Test
+    public void shouldFailInitializingWhenCredentialsAreNotInEnvironmentVariables() {
+        try {
+            PushNotifications.init("bluemixRegion");
+        } catch (Throwable e) {
+            // Did fail; test was successful.
+            return;
+        }
 
-		fail("Initialization did not fail when credentials are not in environment variables.");
-	}
+        fail("Initialization did not fail when credentials are not in environment variables.");
+    }
 
-	@Test
-	public void shouldFailSendingMessageWhenNotInitialized() {
-            try {
-                PushNotifications.send(null, new PushNotificationsResponseListener() {
-                    @Override
-                    public void onSuccess(int statusCode, String responseBody) {
-                        fail("Sending did not fail when PushNotifications was not initialized.");
-                    }
-                    
-                    @Override
-                    public void onFailure(Integer statusCode, String responseBody, Throwable t) {
-                        // Successfully failed.
-                    }
-                });
-            } catch (Exception ex) {
-                Logger.getLogger(PushNotificationsTest.class.getName()).log(Level.SEVERE, null, ex);
+    @Test
+    public void shouldFailSendingMessageWhenNotInitialized() {
+        try {
+            PushNotifications.send(null, new PushNotificationsResponseListener() {
+                @Override
+                public void onSuccess(int statusCode, String responseBody) {
+                    fail("Sending did not fail when PushNotifications was not initialized.");
+                }
+
+                @Override
+                public void onFailure(Integer statusCode, String responseBody, Throwable t) {
+                    // Successfully failed.
+                }
+            });
+        } catch (Exception ex) {
+            Logger.getLogger(PushNotificationsTest.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    @Test
+    public void shouldFailSendingMessageWhenNotificationIsNull() {
+        PushNotifications.init("a", "b", "c");
+
+        try {
+            PushNotifications.send(null, new PushNotificationsResponseListener() {
+                @Override
+                public void onSuccess(int statusCode, String responseBody) {
+                    fail("Sending did not fail when PushNotifications was not initialized.");
+                }
+
+                @Override
+                public void onFailure(Integer statusCode, String responseBody, Throwable t) {
+                    // Successfully failed.
+                }
+            });
+        } catch (Exception ex) {
+            Logger.getLogger(PushNotificationsTest.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    @Test
+    public void shouldSendResponseToListener() {
+        CloseableHttpResponse responseMock = mock(CloseableHttpResponse.class);
+
+        when(responseMock.getEntity()).thenReturn(null);
+        when(responseMock.getStatusLine()).thenReturn(new StatusLine() {
+            @Override
+            public ProtocolVersion getProtocolVersion() {
+                return null;
             }
-	}
 
-	@Test
-	public void shouldFailSendingMessageWhenNotificationIsNull() {
-		PushNotifications.init("a", "b", "c");
-
-            try {
-                PushNotifications.send(null, new PushNotificationsResponseListener() {
-                    @Override
-                    public void onSuccess(int statusCode, String responseBody) {
-                        fail("Sending did not fail when PushNotifications was not initialized.");
-                    }
-                    
-                    @Override
-                    public void onFailure(Integer statusCode, String responseBody, Throwable t) {
-                        // Successfully failed.
-                    }
-                });
-            } catch (Exception ex) {
-                Logger.getLogger(PushNotificationsTest.class.getName()).log(Level.SEVERE, null, ex);
+            @Override
+            public int getStatusCode() {
+                return HttpStatus.SC_ACCEPTED;
             }
-	}
 
-	@Test
-	public void shouldSendResponseToListener() {
-		CloseableHttpResponse responseMock = mock(CloseableHttpResponse.class);
+            @Override
+            public String getReasonPhrase() {
+                return null;
+            }
+        });
 
-		when(responseMock.getEntity()).thenReturn(null);
-		when(responseMock.getStatusLine()).thenReturn(new StatusLine() {
-			@Override
-			public ProtocolVersion getProtocolVersion() {
-				return null;
-			}
+        PushNotificationsResponseListener successListener = new PushNotificationsResponseListener() {
 
-			@Override
-			public int getStatusCode() {
-				return HttpStatus.SC_ACCEPTED;
-			}
+            @Override
+            public void onSuccess(int statusCode, String responseBody) {
+                assertEquals(HttpStatus.SC_ACCEPTED, statusCode);
+                assertTrue(responseBody == null || responseBody.length() == 0);
+            }
 
-			@Override
-			public String getReasonPhrase() {
-				return null;
-			}
-		});
+            @Override
+            public void onFailure(Integer statusCode, String responseBody, Throwable t) {
+                fail("Should not have called failure callback when the Status Code is the correct one.");
+            }
+        };
 
-		PushNotificationsResponseListener successListener = new PushNotificationsResponseListener() {
+        try {
+            PushNotifications.sendResponseToListener(responseMock, successListener);
+        } catch (IOException e) {
+            fail("Should not fail because the response is null.");
+        }
 
-			@Override
-			public void onSuccess(int statusCode, String responseBody) {
-				assertEquals(HttpStatus.SC_ACCEPTED, statusCode);
-				assertTrue(responseBody == null || responseBody.length() == 0);
-			}
+        PushNotificationsResponseListener failureListener = new PushNotificationsResponseListener() {
 
-			@Override
-			public void onFailure(Integer statusCode, String responseBody, Throwable t) {
-				fail("Should not have called failure callback when the Status Code is the correct one.");
-			}
-		};
+            @Override
+            public void onSuccess(int statusCode, String responseBody) {
+                fail("Should not have called success callback when the Status Code is not the valid one.");
+            }
 
-		try {
-			PushNotifications.sendResponseToListener(responseMock, successListener);
-		} catch (IOException e) {
-			fail("Should not fail because the response is null.");
-		}
+            @Override
+            public void onFailure(Integer statusCode, String responseBody, Throwable t) {
+                assertNull(statusCode);
 
-		PushNotificationsResponseListener failureListener = new PushNotificationsResponseListener() {
+                // The response body is empty if mocked:
+                assertTrue(responseBody == null || responseBody.length() == 0);
+            }
+        };
 
-			@Override
-			public void onSuccess(int statusCode, String responseBody) {
-				fail("Should not have called success callback when the Status Code is not the valid one.");
-			}
+        // Return null status code
+        when(responseMock.getStatusLine()).thenReturn(null);
+        when(responseMock.getEntity()).thenReturn(mock(HttpEntity.class));
 
-			@Override
-			public void onFailure(Integer statusCode, String responseBody, Throwable t) {
-				assertNull(statusCode);
+        try {
+            PushNotifications.sendResponseToListener(responseMock, failureListener);
+        } catch (IOException e) {
+            fail("Should not fail because the response is null.");
+        }
+    }
 
-				// The response body is empty if mocked:
-				assertTrue(responseBody == null || responseBody.length() == 0);
-			}
-		};
+    @Test
+    public void shouldCallSuccessCallbackWhenTheResponseIsCorrect() throws Throwable {
+        CloseableHttpClient clientMock = mock(CloseableHttpClient.class);
+        CloseableHttpResponse responseMock = mock(CloseableHttpResponse.class);
 
-		// Return null status code
-		when(responseMock.getStatusLine()).thenReturn(null);
-		when(responseMock.getEntity()).thenReturn(mock(HttpEntity.class));
+        when(responseMock.getStatusLine()).thenReturn(new StatusLine() {
 
-		try {
-			PushNotifications.sendResponseToListener(responseMock, failureListener);
-		} catch (IOException e) {
-			fail("Should not fail because the response is null.");
-		}
-	}
+            @Override
+            public int getStatusCode() {
+                return HttpStatus.SC_ACCEPTED;
+            }
 
-	@Test
-	public void shouldCallSuccessCallbackWhenTheResponseIsCorrect() throws Throwable {
-		CloseableHttpClient clientMock = mock(CloseableHttpClient.class);
-		CloseableHttpResponse responseMock = mock(CloseableHttpResponse.class);
+            @Override
+            public String getReasonPhrase() {
+                return null;
+            }
 
-		when(responseMock.getStatusLine()).thenReturn(new StatusLine() {
+            @Override
+            public ProtocolVersion getProtocolVersion() {
+                return null;
+            }
+        });
+        when(clientMock.execute(null)).thenReturn(responseMock);
 
-			@Override
-			public int getStatusCode() {
-				return HttpStatus.SC_ACCEPTED;
-			}
+        PushNotifications.executePushPostRequest(null, clientMock, new PushNotificationsResponseListener() {
 
-			@Override
-			public String getReasonPhrase() {
-				return null;
-			}
+            @Override
+            public void onSuccess(int statusCode, String responseBody) {
+                assertEquals(HttpStatus.SC_ACCEPTED, statusCode);
+                assertTrue(responseBody == null || responseBody.length() == 0);
+            }
 
-			@Override
-			public ProtocolVersion getProtocolVersion() {
-				return null;
-			}
-		});
-		when(clientMock.execute(null)).thenReturn(responseMock);
+            @Override
+            public void onFailure(Integer statusCode, String responseBody, Throwable t) {
+                fail("The status code should have been correct, and there should not have been any exceptions");
+            }
+        });
+    }
 
-		PushNotifications.executePushPostRequest(null, clientMock, new PushNotificationsResponseListener() {
+    @Test
+    public void shouldCallFailureCallbackIfExceptionOccursWhenExecutingRequest()
+            throws ClientProtocolException, IOException {
+        CloseableHttpClient clientMock = mock(CloseableHttpClient.class);
 
-			@Override
-			public void onSuccess(int statusCode, String responseBody) {
-				assertEquals(HttpStatus.SC_ACCEPTED, statusCode);
-				assertTrue(responseBody == null || responseBody.length() == 0);
-			}
+        when(clientMock.execute(any(HttpUriRequest.class))).thenThrow(new ClientProtocolException());
 
-			@Override
-			public void onFailure(Integer statusCode, String responseBody, Throwable t) {
-				fail("The status code should have been correct, and there should not have been any exceptions");
-			}
-		});
-	}
+        PushNotifications.executePushPostRequest(null, clientMock, new PushNotificationsResponseListener() {
 
-	@Test
-	public void shouldCallFailureCallbackIfExceptionOccursWhenExecutingRequest()
-			throws ClientProtocolException, IOException {
-		CloseableHttpClient clientMock = mock(CloseableHttpClient.class);
+            @Override
+            public void onSuccess(int statusCode, String responseBody) {
+                fail("Should not have succeeded.");
+            }
 
-		when(clientMock.execute(any(HttpUriRequest.class))).thenThrow(new ClientProtocolException());
-
-		PushNotifications.executePushPostRequest(null, clientMock, new PushNotificationsResponseListener() {
-
-			@Override
-			public void onSuccess(int statusCode, String responseBody) {
-				fail("Should not have succeeded.");
-			}
-
-			@Override
-			public void onFailure(Integer statusCode, String responseBody, Throwable t) {
-                                    System.out.println(statusCode);
-                                    System.out.println(responseBody);
-				assertNull(statusCode);
-				assertNull(responseBody);
-				assertTrue(t instanceof ClientProtocolException);
-			}
-		});
-	}
+            @Override
+            public void onFailure(Integer statusCode, String responseBody, Throwable t) {
+                assertNull(statusCode);
+                assertNull(responseBody);
+                assertTrue(t instanceof ClientProtocolException);
+            }
+        });
+    }
 }

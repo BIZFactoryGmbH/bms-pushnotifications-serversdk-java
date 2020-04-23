@@ -10,7 +10,6 @@
  *     See the License for the specific language governing permissions and
  *     limitations under the License.
  */
-
 package com.ibm.mobilefirstplatform.serversdk.java.push;
 
 import java.io.ByteArrayOutputStream;
@@ -21,9 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import javax.net.ssl.SSLContext;
-
 import org.apache.http.HttpStatus;
 import org.apache.http.NameValuePair;
 import org.apache.http.ParseException;
@@ -38,14 +35,15 @@ import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.protocol.HTTP;
 import org.apache.http.util.EntityUtils;
 import org.json.JSONObject;
-
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ibm.mobilefirstplatform.serversdk.java.push.exception.PushServerSDKException;
+
 import java.net.URLEncoder;
 import java.security.KeyStoreException;
 import org.apache.http.HttpEntity;
+
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpHost;
 import org.apache.http.client.config.RequestConfig;
@@ -53,7 +51,6 @@ import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
 import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.params.HttpProtocolParams;
 import org.apache.http.ssl.SSLContextBuilder;
 
 /**
@@ -61,6 +58,7 @@ import org.apache.http.ssl.SSLContextBuilder;
  * using the Push Notification service.
  */
 public class PushNotifications {
+
 	public static final String US_SOUTH_REGION = ".ng.bluemix.net";
 	public static final String UK_REGION = ".eu-gb.bluemix.net";
 	public static final String SYDNEY_REGION = ".au-syd.bluemix.net";
@@ -245,13 +243,9 @@ public class PushNotifications {
                         throw  new PushServerSDKException(PushConstants.PushServerSDKExceptions.IAM_FAILURE_EXCEPTION, e);
                     }
 
-                } catch (NoSuchAlgorithmException ex) {
+                } catch (Exception ex) {
                     Logger.getLogger(PushNotifications.class.getName()).log(Level.SEVERE, null, ex);
-                } catch (KeyStoreException ex) {
-                Logger.getLogger(PushNotifications.class.getName()).log(Level.SEVERE, null, ex);
-            } catch (KeyManagementException ex) {
-                Logger.getLogger(PushNotifications.class.getName()).log(Level.SEVERE, null, ex);
-            }
+                } 
 		return null;
 	}
 

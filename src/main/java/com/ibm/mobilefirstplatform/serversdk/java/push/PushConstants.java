@@ -10,7 +10,6 @@
  *     See the License for the specific language governing permissions and
  *     limitations under the License.
  */
-
 package com.ibm.mobilefirstplatform.serversdk.java.push;
 
 /**
@@ -44,18 +43,16 @@ public final class PushConstants {
 	public static final String EMPTY_SPACE = " ";
 	public static final String ALERT_NOT_NULL_EXCEPTION = "The alert cannot be null. Please use MessageBuilder to set alert";
 	public static final String TLS_VERSION = "TLSv1.2";
+    
 
-	private PushConstants() {
+    public static final class PushServerSDKExceptions {
 
-	}
-	
-	public static final class PushServerSDKExceptions {
-		public static final String PUSH_INIT_EXCEPTION = "FPSDK0001A: PushNotifications could not be initialized. Credentials could not be found in environment variables. Make sure they are available, or use the other constructor.";
-		public static final String NOT_PROPERLY_INITIALIZED_EXCEPTION = "FPSDK0002A: PushNotifications has not been properly initialized.";
-		public static final String NULL_NOTIFICATION_EXCEPTION = "FPSDK0003A: Cannot send a null push notification.";
-		public static final String IAM_FAILURE_EXCEPTION	= "FPSDK0004A: Error in fetching service access token";
-		public static final String ALERT_NOT_NULL_EXCEPTION = "FPSDK0005A: The alert cannot be null. Please use MessageBuilder to set alert";
-		public static final String JSON_PARSER_EXCEPTION = "FPSDK0006A:  Header elements cannot be parsed";
-		public static final String JSON_IO_EXCEPTION = "FPSDK0007A: An error occurs reading the input stream";
-	}
+        public static final String PUSH_INIT_EXCEPTION = "FPSDK0001A: PushNotifications could not be initialized. Credentials could not be found in environment variables. Make sure they are available, or use the other constructor.";
+        public static final String NOT_PROPERLY_INITIALIZED_EXCEPTION = "FPSDK0002A: PushNotifications has not been properly initialized.";
+        public static final String NULL_NOTIFICATION_EXCEPTION = "FPSDK0003A: Cannot send a null push notification.";
+        public static final String IAM_FAILURE_EXCEPTION = "FPSDK0004A: Error in fetching service access token";
+        public static final String ALERT_NOT_NULL_EXCEPTION = "FPSDK0005A: The alert cannot be null. Please use MessageBuilder to set alert";
+        public static final String JSON_PARSER_EXCEPTION = "FPSDK0006A:  Header elements cannot be parsed";
+        public static final String JSON_IO_EXCEPTION = "FPSDK0007A: An error occurs reading the input stream";
+    }
 }

@@ -10,145 +10,140 @@
  *     See the License for the specific language governing permissions and
  *     limitations under the License.
  */
-
 package com.ibm.mobilefirstplatform.serversdk.java.push;
 
 /**
- * 
+ *
  * Modal class for notification target which specifies the recipients of the
  * notification.
  *
  */
 public final class Target {
 
-	private String[] deviceIds = null;
-	private String[] userIds = null;
-	private String[] platforms = null;
-	private String[] tagNames = null;
+    private String[] deviceIds = null;
+    private String[] userIds = null;
+    private String[] platforms = null;
+    private String[] tagNames = null;
 
-	public final String[] getDeviceIds() {
-		return deviceIds;
-	}
+    public final String[] getDeviceIds() {
+        return deviceIds;
+    }
 
-	public final String[] getUserIds() {
-		return userIds;
-	}
+    public final String[] getUserIds() {
+        return userIds;
+    }
 
-	public final String[] getPlatforms() {
-		return platforms;
-	}
+    public final String[] getPlatforms() {
+        return platforms;
+    }
 
-	public final String[] getTagNames() {
-		return tagNames;
-	}
+    public final String[] getTagNames() {
+        return tagNames;
+    }
 
-	private Target(Builder builder) {
-		this.deviceIds = builder.deviceIds;
-		this.platforms = builder.platforms;
-		this.tagNames = builder.tagNames;
-		this.userIds = builder.userIds;
-	}
+    private Target(Builder builder) {
+        this.deviceIds = builder.deviceIds;
+        this.platforms = builder.platforms;
+        this.tagNames = builder.tagNames;
+        this.userIds = builder.userIds;
+    }
 
-	/**
-	 * 
-	 * Builder for {@link Target}.
-	 *
-	 */
-	public static class Builder {
-		/**
-		 * 
-		 * Determines platforms for notification.
-		 *
-		 */
-		public enum Platform {
-			APPLE("A"), GOOGLE("G"), WEBCHROME("WEB_CHROME"), WEBFIREFOX("WEB_FIREFOX"), WEBSAFARI(
-					"WEB_SAFARI"), APPEXTCHROME("APPEXT_CHROME");
+    /**
+     *
+     * Builder for {@link Target}.
+     *
+     */
+    public static class Builder {
 
-			private final String platformCode;
+        /**
+         *
+         * Determines platforms for notification.
+         *
+         */
+        public enum Platform {
+            APPLE("A"), GOOGLE("G"), WEBCHROME("WEB_CHROME"), WEBFIREFOX("WEB_FIREFOX"), WEBSAFARI(
+                    "WEB_SAFARI"), APPEXTCHROME("APPEXT_CHROME");
 
-			Platform(String code) {
-				this.platformCode = code;
-			}
+            private final String platformCode;
 
-			public final String getValue() {
-				return platformCode;
-			}
-		}
+            Platform(String code) {
+                this.platformCode = code;
+            }
 
-		private String[] deviceIds = null;
-		private String[] userIds = null;
-		private String[] platforms = null;
-		private String[] tagNames = null;
+            public final String getValue() {
+                return platformCode;
+            }
+        }
 
-		/**
-		 * 
-		 * @param deviceIds
-		 *            Send notification to the list of specified devices.
-		 * @return The Builder object for calls to be linked.
-		 */
-		public final Builder deviceIds(final String[] deviceIds) {
-			this.deviceIds = deviceIds;
-			return this;
-		}
+        private String[] deviceIds = null;
+        private String[] userIds = null;
+        private String[] platforms = null;
+        private String[] tagNames = null;
 
-		/**
-		 * 
-		 * @param userIds
-		 *            Send notification to the specified userIds.
-		 * @return The Builder object for calls to be linked.
-		 */
-		public final Builder userIds(final String[] userIds) {
-			this.userIds = userIds;
-			return this;
-		}
+        /**
+         *
+         * @param deviceIds Send notification to the list of specified devices.
+         * @return The Builder object for calls to be linked.
+         */
+        public final Builder deviceIds(final String[] deviceIds) {
+            this.deviceIds = deviceIds;
+            return this;
+        }
 
-		/**
-		 * 
-		 * @param tagNames
-		 *            Send notification to the devices that have subscribed to
-		 *            any of these tags.
-		 * @return The Builder object for calls to be linked.
-		 */
-		public final Builder tagNames(final String[] tagNames) {
-			this.tagNames = tagNames;
-			return this;
-		}
+        /**
+         *
+         * @param userIds Send notification to the specified userIds.
+         * @return The Builder object for calls to be linked.
+         */
+        public final Builder userIds(final String[] userIds) {
+            this.userIds = userIds;
+            return this;
+        }
 
-		/**
-		 * 
-		 * @param platforms
-		 *            Send notification to the devices of the specified
-		 *            platforms. 'A' for apple (iOS) devices, 'G' for google
-		 *            (Android) devices, 'WEB_CHROME' for Chrome Web Browsers,
-		 *            'WEB_FIREFOX' for Firefox Web Browsers, 'WEB_SAFARI' for
-		 *            Safari Push Notifications and 'APPEXT_CHROME' for Chrome
-		 *            App Extension.
-		 * @return The Builder object for calls to be linked.
-		 */
-		public final Builder platforms(final Platform[] platforms) {
+        /**
+         *
+         * @param tagNames Send notification to the devices that have subscribed
+         * to any of these tags.
+         * @return The Builder object for calls to be linked.
+         */
+        public final Builder tagNames(final String[] tagNames) {
+            this.tagNames = tagNames;
+            return this;
+        }
 
-			String[] platformArray = null;
+        /**
+         *
+         * @param platforms Send notification to the devices of the specified
+         * platforms. 'A' for apple (iOS) devices, 'G' for google (Android)
+         * devices, 'WEB_CHROME' for Chrome Web Browsers, 'WEB_FIREFOX' for
+         * Firefox Web Browsers, 'WEB_SAFARI' for Safari Push Notifications and
+         * 'APPEXT_CHROME' for Chrome App Extension.
+         * @return The Builder object for calls to be linked.
+         */
+        public final Builder platforms(final Platform[] platforms) {
 
-			if (platforms != null && platforms.length > 0) {
+            String[] platformArray = null;
 
-				platformArray = new String[platforms.length];
+            if (platforms != null && platforms.length > 0) {
 
-				for (int i = 0; i < platforms.length; i++) {
-					platformArray[i] = platforms[i].getValue();
-				}
-			}
+                platformArray = new String[platforms.length];
 
-			this.platforms = platformArray;
-			return this;
-		}
+                for (int i = 0; i < platforms.length; i++) {
+                    platformArray[i] = platforms[i].getValue();
+                }
+            }
 
-		/**
-		 * 
-		 * @return the {@link Target} object.
-		 */
-		public Target build() {
-			return new Target(this);
-		}
+            this.platforms = platformArray;
+            return this;
+        }
 
-	}
+        /**
+         *
+         * @return the {@link Target} object.
+         */
+        public Target build() {
+            return new Target(this);
+        }
+
+    }
 }

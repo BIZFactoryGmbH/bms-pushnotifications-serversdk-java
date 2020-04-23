@@ -18,30 +18,26 @@ package com.ibm.mobilefirstplatform.serversdk.java.push;
  * method.
  */
 public interface PushNotificationsResponseListener {
-	/**
-	 * This method will be called when the push notification was successfully
-	 * sent to the IBM® Cloud Push Notification service.
-	 * 
-	 * @param statusCode
-	 *            the status code of the response
-	 * @param responseBody
-	 *            the body of the response, as a String
-	 */
-	void onSuccess(int statusCode, String responseBody);
 
-	/**
-	 * This method will be called when anything goes wrong while sending the
-	 * push notification. All three of the parameters might be null.
-	 * 
-	 * @param statusCode
-	 *            The status code of the response. It can be null, if there was
-	 *            no response.
-	 * @param responseBody
-	 *            The body of the response. It can be null, if no body was
-	 *            received.
-	 * @param t
-	 *            The exception or throwable that caused the failure, or null,
-	 *            if there was no Throwable.
-	 */
-	void onFailure(Integer statusCode, String responseBody, Throwable t);
+    /**
+     * This method will be called when the push notification was successfully
+     * sent to the IBM® Cloud Push Notification service.
+     *
+     * @param statusCode the status code of the response
+     * @param responseBody the body of the response, as a String
+     */
+    void onSuccess(int statusCode, String responseBody);
+
+    /**
+     * This method will be called when anything goes wrong while sending the
+     * push notification. All three of the parameters might be null.
+     *
+     * @param statusCode The status code of the response. It can be null, if
+     * there was no response.
+     * @param responseBody The body of the response. It can be null, if no body
+     * was received.
+     * @param t The exception or throwable that caused the failure, or null, if
+     * there was no Throwable.
+     */
+    void onFailure(Integer statusCode, String responseBody, Throwable t);
 }
