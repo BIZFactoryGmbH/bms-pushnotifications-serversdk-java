@@ -11,6 +11,7 @@ package com.ibm.mobilefirstplatform.serversdk.java.push;
  */
 import java.io.IOException;
 import java.security.KeyManagementException;
+import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.cert.CertificateException;
@@ -25,26 +26,33 @@ import javax.net.ssl.X509TrustManager;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
+import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.http.util.EntityUtils;
 
 public class HttpsSSLClient {
 
 
-    public static CloseableHttpClient createSSLInsecureClient() {
+    public static CloseableHttpClient createSSLInsecureClient() throws NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
         
-        SSLContext sslcontext = createSSLContext();
-        SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(sslcontext, new HostnameVerifier() {
-
-            @Override
-            public boolean verify(String paramString, SSLSession paramSSLSession) {
-                return true;
-            }
-        });
-        CloseableHttpClient httpclient = HttpClients.custom().setSSLSocketFactory(sslsf).build();
-        return httpclient;
+//        SSLContext sslcontext = createSSLContext();
+//        SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(sslcontext, new HostnameVerifier() {
+//
+//            @Override
+//            public boolean verify(String paramString, SSLSession paramSSLSession) {
+//                return true;
+//            }
+//        });
+SSLContext sslContext = new SSLContextBuilder().loadTrustMaterial(null, TrustSelfSignedStrategy.INSTANCE).build();
+SSLConnectionSocketFactory sslSocketFactory = new SSLConnectionSocketFactory(sslContext, NoopHostnameVerifier.INSTANCE);
+        return HttpClients.custom().setDefaultCookieStore(new BasicCookieStore())
+                                   .setSSLSocketFactory(sslSocketFactory)
+                                   .build();
     }
 
 
